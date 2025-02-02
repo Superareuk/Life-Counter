@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Life Countdown</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+        }
+        .counter {
+            font-size: 2em;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="counter">
+        <h2>Time Lived:</h2>
+        <div id="lived"></div>
+        
+        <h2>Life Percentages:</h2>
+        <div id="percentage60"></div>
+        <div id="percentage70"></div>
+        <div id="percentage80"></div>
+
+        <h2>Time Remaining:</h2>
+        <div id="remaining60"></div>
+        <div id="remaining70"></div>
+        <div id="remaining80"></div>
+    </div>
+
+    <script>
+        function updateCounter() {
+            const birthday = new Date('1990-03-30');
+            const today = new Date();
+            
+            // Calculate time lived
+            const daysSinceBirth = Math.floor((today - birthday) / (1000 * 60 * 60 * 24));
+            const yearsSinceBirth = Math.floor(daysSinceBirth / 365.25);
+            const monthsSinceBirth = Math.floor((daysSinceBirth % 365.25) / 30.44);
+            const remainingDays = Math.floor(daysSinceBirth % 30.44);
+
+            // Define target ages in days
+            const days60 = 21915; // 60 years
+            const days70 = 25568; // 70 years
+            const days80 = 29220; // 80 years
+
+            // Calculate remaining time for each scenario
+            function calculateRemaining(targetDays) {
+                const remaining = targetDays - daysSinceBirth;
+                const years = Math.floor(remaining / 365.25);
+                const months = Math.floor((remaining % 365.25) / 30.44);
+                const days = Math.floor(remaining % 30.44);
+                return `${years} years, ${months} months, ${days} days`;
+            }
+
+            // Update lived time
+            document.getElementById('lived').innerHTML = 
+                `${yearsSinceBirth} years, ${monthsSinceBirth} months, ${remainingDays} days<br>
+                 Total days: ${daysSinceBirth}`;
+
+            // Update percentages
+            document.getElementById('percentage60').textContent = 
+                `To age 60: ${((daysSinceBirth/days60) * 100).toFixed(2)}%`;
+            document.getElementById('percentage70').textContent = 
+                `To age 70: ${((daysSinceBirth/days70) * 100).toFixed(2)}%`;
+            document.getElementById('percentage80').textContent = 
+                `To age 80: ${((daysSinceBirth/days80) * 100).toFixed(2)}%`;
+
+            // Update remaining time
+            document.getElementById('remaining60').textContent = 
+                `To age 60: ${calculateRemaining(days60)}`;
+            document.getElementById('remaining70').textContent = 
+                `To age 70: ${calculateRemaining(days70)}`;
+            document.getElementById('remaining80').textContent = 
+                `To age 80: ${calculateRemaining(days80)}`;
+        }
+
+        // Update every second
+        setInterval(updateCounter, 1000);
+        updateCounter();
+    </script>
+</body>
+</html>
