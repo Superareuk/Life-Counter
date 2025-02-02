@@ -15,8 +15,8 @@
             padding: 20px;
         }
         .counter {
-            width: 80%;
-            max-width: 600px;
+            width: 90%;
+            max-width: 800px;
         }
         .progress-container {
             margin: 20px 0;
@@ -30,41 +30,120 @@
         }
         .progress {
             height: 100%;
-            background-color: #4CAF50;
             transition: width 0.5s ease-in-out;
+        }
+        .standard-progress {
+            background-color: #4CAF50;
+        }
+        .memorial-progress {
+            background-color: #4a90e2;
+        }
+        .memorial-after {
+            background-color: #purple;
+        }
+        .warning-progress {
+            background-color: #ff4444;
         }
         .label {
             margin-bottom: 5px;
             font-weight: bold;
         }
+        .section {
+            margin: 30px 0;
+            padding: 20px;
+            background-color: white;
+            border-radius: 10px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .seasonal-counter {
+            font-size: 1.2em;
+            margin: 10px 0;
+            color: #2c3e50;
+        }
     </style>
 </head>
 <body>
     <div class="counter">
-        <h2>Time Lived: <span id="lived"></span></h2>
-
-        <div class="progress-container">
-            <div class="label">Progress to 60 years: <span id="percentage60"></span></div>
-            <div class="progress-bar">
-                <div class="progress" id="progress60"></div>
-            </div>
-            <div id="remaining60"></div>
+        <div class="section">
+            <h2>Personal Timeline</h2>
+            <div id="lived"></div>
         </div>
 
-        <div class="progress-container">
-            <div class="label">Progress to 70 years: <span id="percentage70"></span></div>
-            <div class="progress-bar">
-                <div class="progress" id="progress70"></div>
+        <div class="section">
+            <h2>Life Expectancy</h2>
+            <!-- Original life expectancy bars -->
+            <div class="progress-container">
+                <div class="label">Progress to 60 years: <span id="percentage60"></span></div>
+                <div class="progress-bar">
+                    <div class="progress standard-progress" id="progress60"></div>
+                </div>
+                <div id="remaining60"></div>
             </div>
-            <div id="remaining70"></div>
+            
+            <div class="progress-container">
+                <div class="label">Progress to 70 years: <span id="percentage70"></span></div>
+                <div class="progress-bar">
+                    <div class="progress standard-progress" id="progress70"></div>
+                </div>
+                <div id="remaining70"></div>
+            </div>
+
+            <div class="progress-container">
+                <div class="label">Progress to 80 years: <span id="percentage80"></span></div>
+                <div class="progress-bar">
+                    <div class="progress standard-progress" id="progress80"></div>
+                </div>
+                <div id="remaining80"></div>
+            </div>
+
+            <div class="progress-container">
+                <div class="label">Reduced Life Expectancy (Heavy Drinking): <span id="percentageReduced"></span></div>
+                <div class="progress-bar">
+                    <div class="progress warning-progress" id="progressReduced"></div>
+                </div>
+                <div id="remainingReduced"></div>
+            </div>
         </div>
 
-        <div class="progress-container">
-            <div class="label">Progress to 80 years: <span id="percentage80"></span></div>
-            <div class="progress-bar">
-                <div class="progress" id="progress80"></div>
+        <div class="section">
+            <h2>Time with Family</h2>
+            <div class="progress-container">
+                <div class="label">Time with Charlotte (until age 20): <span id="percentageCharlotte"></span></div>
+                <div class="progress-bar">
+                    <div class="progress standard-progress" id="progressCharlotte"></div>
+                </div>
+                <div id="remainingCharlotte"></div>
             </div>
-            <div id="remaining80"></div>
+
+            <div class="progress-container">
+                <div class="label">Time with Beau (until age 20): <span id="percentageBeau"></span></div>
+                <div class="progress-bar">
+                    <div class="progress standard-progress" id="progressBeau"></div>
+                </div>
+                <div id="remainingBeau"></div>
+            </div>
+
+            <div class="progress-container">
+                <div class="label">Time with Becca: <span id="percentageBecca"></span></div>
+                <div class="progress-bar">
+                    <div class="progress standard-progress" id="progressBecca"></div>
+                </div>
+                <div id="timeBecca"></div>
+            </div>
+
+            <div class="progress-container">
+                <div class="label">Time with Jack: <span id="percentageJack"></span></div>
+                <div class="progress-bar">
+                    <div class="memorial-progress" id="progressJack" style="width: 100%"></div>
+                </div>
+                <div id="timeJack"></div>
+            </div>
+        </div>
+
+        <div class="section">
+            <h2>Seasonal Milestones</h2>
+            <div class="seasonal-counter" id="summers"></div>
+            <div class="seasonal-counter" id="christmases"></div>
         </div>
     </div>
 
@@ -73,14 +152,32 @@
             const birthday = new Date('1990-03-30');
             const today = new Date();
             
+            // Calculate basic time lived
             const daysSinceBirth = Math.floor((today - birthday) / (1000 * 60 * 60 * 24));
             const yearsSinceBirth = Math.floor(daysSinceBirth / 365.25);
             const monthsSinceBirth = Math.floor((daysSinceBirth % 365.25) / 30.44);
             const remainingDays = Math.floor(daysSinceBirth % 30.44);
 
+            // Life expectancy calculations
             const days60 = 21915;
             const days70 = 25568;
             const days80 = 29220;
+            const daysReduced = 18250; // 50 years - example reduced life expectancy
+
+            // Family dates
+            const charlotteStart = new Date('2017-02-15');
+            const charlotteEnd = new Date('2037-02-15');
+            const beauStart = new Date('2020-06-22');
+            const beauEnd = new Date('2040-06-22');
+            const beccaStart = new Date('2006-04-01');
+            const jackBirth = new Date('2015-08-11');
+            const jackPassing = new Date('2020-02-10');
+
+            function calculatePercentage(start, end) {
+                const total = end - start;
+                const elapsed = today - start;
+                return (elapsed / total) * 100;
+            }
 
             function calculateRemaining(targetDays) {
                 const remaining = targetDays - daysSinceBirth;
@@ -90,28 +187,56 @@
                 return `${years} years, ${months} months, ${days} days remaining`;
             }
 
+            // Update time lived
             document.getElementById('lived').textContent = 
-                `${yearsSinceBirth} years, ${monthsSinceBirth} months, ${remainingDays} days`;
+                `${yearsSinceBirth} years, ${monthsSinceBirth} months, ${remainingDays} days lived`;
 
+            // Update life expectancy bars
             const percent60 = (daysSinceBirth/days60) * 100;
             const percent70 = (daysSinceBirth/days70) * 100;
             const percent80 = (daysSinceBirth/days80) * 100;
+            const percentReduced = (daysSinceBirth/daysReduced) * 100;
 
-            document.getElementById('percentage60').textContent = `${percent60.toFixed(2)}%`;
-            document.getElementById('percentage70').textContent = `${percent70.toFixed(2)}%`;
-            document.getElementById('percentage80').textContent = `${percent80.toFixed(2)}%`;
+            // Update family time bars
+            const percentageCharlotte = calculatePercentage(charlotteStart, charlotteEnd);
+            const percentageBeau = calculatePercentage(beauStart, beauEnd);
+            const percentageBecca = calculatePercentage(beccaStart, today);
 
-            document.getElementById('progress60').style.width = `${percent60}%`;
-            document.getElementById('progress70').style.width = `${percent70}%`;
-            document.getElementById('progress80').style.width = `${percent80}%`;
+            // Calculate seasons remaining (assuming kids move out at oldest child's 20)
+            const lastChildhood = new Date('2040-06-22'); // Beau's 20th birthday
+            const summersRemaining = Math.ceil((lastChildhood - today) / (365.25 * 24 * 60 * 60 * 1000));
+            const christmasesRemaining = summersRemaining;
 
-            document.getElementById('remaining60').textContent = calculateRemaining(days60);
-            document.getElementById('remaining70').textContent = calculateRemaining(days70);
-            document.getElementById('remaining80').textContent = calculateRemaining(days80);
+            // Update all displays
+            updateProgressBar('60', percent60);
+            updateProgressBar('70', percent70);
+            updateProgressBar('80', percent80);
+            updateProgressBar('Reduced', percentReduced);
+            updateProgressBar('Charlotte', percentageCharlotte);
+            updateProgressBar('Beau', percentageBeau);
+            updateProgressBar('Becca', percentageBecca);
+
+            // Update Jack's memorial timeline
+            const timeWithJack = (jackPassing - jackBirth) / (1000 * 60 * 60 * 24);
+            const timeSinceJack = (today - jackPassing) / (1000 * 60 * 60 * 24);
+            document.getElementById('timeJack').textContent = 
+                `Time together: ${Math.floor(timeWithJack/365.25)} years, ${Math.floor((timeWithJack%365.25)/30.44)} months\n` +
+                `Time since: ${Math.floor(timeSinceJack/365.25)} years, ${Math.floor((timeSinceJack%365.25)/30.44)} months`;
+
+            // Update seasonal counters
+            document.getElementById('summers').textContent = 
+                `Summers remaining with children: ${summersRemaining}`;
+            document.getElementById('christmases').textContent = 
+                `Christmases remaining with children: ${christmasesRemaining}`;
+        }
+
+        function updateProgressBar(id, percentage) {
+            document.getElementById(`percentage${id}`).textContent = `${percentage.toFixed(2)}%`;
+            document.getElementById(`progress${id}`).style.width = `${Math.min(100, percentage)}%`;
         }
 
         setInterval(updateCounter, 1000);
         updateCounter();
     </script>
 </body>
-</html> 
+</html>
