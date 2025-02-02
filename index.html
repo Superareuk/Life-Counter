@@ -8,45 +8,48 @@
            margin: 0;
            padding: 20px;
            font-family: Arial, sans-serif;
-           background: #1a1a1a;
+           background: #000;
            color: white;
-           min-height: 100vh;
        }
 
        .dashboard {
            display: grid;
-           grid-template-columns: 1fr 1fr;
+           grid-template-columns: repeat(2, 1fr);
            gap: 15px;
-           max-width: 1200px;
+           max-width: 800px;
            margin: 0 auto;
        }
 
        .countdown {
            grid-column: 1 / -1;
+           display: grid;
+           grid-template-columns: repeat(auto-fit, minmax(90px, 1fr));
+           gap: 10px;
            text-align: center;
-           font-size: 1.2em;
-           margin-bottom: 10px;
+           margin-bottom: 20px;
        }
 
        .time-unit {
-           display: inline-block;
            background: #333;
-           padding: 10px;
-           margin: 0 5px;
-           border-radius: 5px;
-           min-width: 60px;
+           padding: 15px 10px;
+           border-radius: 10px;
        }
 
-       .progress-section {
+       .value {
+           font-size: 1.5em;
+           font-weight: bold;
+       }
+
+       .section {
            background: #333;
            padding: 15px;
            border-radius: 10px;
        }
 
        .progress-bar {
-           background: #444;
-           height: 25px;
-           border-radius: 12px;
+           background: #555;
+           height: 20px;
+           border-radius: 10px;
            margin: 10px 0;
            overflow: hidden;
        }
@@ -57,18 +60,21 @@
            transition: width 0.3s ease;
        }
 
+       .progress.warning {
+           background: #ff4444;
+       }
+
        .dual-progress {
            display: flex;
+           height: 100%;
        }
 
        .life-segment {
            background: #4CAF50;
-           height: 100%;
        }
 
        .memorial-segment {
            background: #ff4444;
-           height: 100%;
        }
 
        h2 {
@@ -79,36 +85,25 @@
        h3 {
            margin: 10px 0 5px 0;
            font-size: 1em;
+           opacity: 0.9;
        }
 
        .stats {
            font-size: 0.9em;
            margin: 5px 0;
+           opacity: 0.8;
        }
 
-       .highlight {
-           color: #4CAF50;
-           font-weight: bold;
-       }
-
-       .warning {
-           color: #ff4444;
+       .special-date {
+           margin: 15px 0;
        }
    </style>
 </head>
 <body>
    <div class="dashboard">
-       <div class="countdown" id="mainTimer">
-           <div class="time-unit" id="years"></div>
-           <div class="time-unit" id="months"></div>
-           <div class="time-unit" id="weeks"></div>
-           <div class="time-unit" id="days"></div>
-           <div class="time-unit" id="hours"></div>
-           <div class="time-unit" id="minutes"></div>
-           <div class="time-unit" id="seconds"></div>
-       </div>
+       <div class="countdown" id="mainTimer"></div>
 
-       <div class="progress-section">
+       <div class="section">
            <h2>Life Progress (to 70)</h2>
            <div class="progress-bar">
                <div class="progress" id="lifeProgress"></div>
@@ -116,21 +111,21 @@
            <div class="stats" id="lifeStats"></div>
        </div>
 
-       <div class="progress-section">
+       <div class="section">
            <h2>Family</h2>
-           <h3>Becca (Since 2006)</h3>
+           <h3>Becca (To 70)</h3>
            <div class="progress-bar">
                <div class="progress" id="beccaProgress"></div>
            </div>
            <div class="stats" id="beccaStats"></div>
 
-           <h3>Charlotte (Until 20)</h3>
+           <h3>Charlotte (To 20)</h3>
            <div class="progress-bar">
                <div class="progress" id="charlotteProgress"></div>
            </div>
            <div class="stats" id="charlotteStats"></div>
 
-           <h3>Beau (Until 20)</h3>
+           <h3>Beau (To 20)</h3>
            <div class="progress-bar">
                <div class="progress" id="beauProgress"></div>
            </div>
@@ -143,32 +138,45 @@
            <div class="stats" id="jackStats"></div>
        </div>
 
-       <div class="progress-section">
+       <div class="section">
            <h2>Health Impact</h2>
            <div class="progress-bar">
-               <div class="progress warning" id="lightDrinking"></div>
+               <div class="progress warning" id="lightProgress"></div>
            </div>
            <div class="stats" id="lightStats"></div>
            
            <div class="progress-bar">
-               <div class="progress warning" id="moderateDrinking"></div>
+               <div class="progress warning" id="moderateProgress"></div>
            </div>
            <div class="stats" id="moderateStats"></div>
            
            <div class="progress-bar">
-               <div class="progress warning" id="heavyDrinking"></div>
+               <div class="progress warning" id="heavyProgress"></div>
            </div>
            <div class="stats" id="heavyStats"></div>
        </div>
 
-       <div class="progress-section">
+       <div class="section">
            <h2>Special Moments</h2>
-           <div class="stats" id="specialDates"></div>
+           <div class="special-date">
+               <h3>Summers</h3>
+               <div class="progress-bar">
+                   <div class="progress" id="summerProgress"></div>
+               </div>
+               <div class="stats" id="summerStats"></div>
+           </div>
+
+           <div class="special-date">
+               <h3>Christmases</h3>
+               <div class="progress-bar">
+                   <div class="progress" id="christmasProgress"></div>
+               </div>
+               <div class="stats" id="christmasStats"></div>
+           </div>
        </div>
    </div>
 
    <script>
-       // Constants
        const BIRTH_DATE = new Date('1990-03-30');
        const TARGET_AGE = new Date('2060-03-30');
        const BECCA_START = new Date('2006-04-01');
@@ -177,45 +185,57 @@
        const JACK_BIRTH = new Date('2015-08-11');
        const JACK_PASSING = new Date('2020-02-10');
 
+       function getNextDate(month, day, year = new Date().getFullYear()) {
+           const now = new Date();
+           let date = new Date(year, month - 1, day);
+           if (date < now) {
+               date = new Date(year + 1, month - 1, day);
+           }
+           return date;
+       }
+
        function updateDashboard() {
            const now = new Date();
            updateMainTimer(now);
            updateLifeProgress(now);
            updateFamily(now);
            updateHealth(now);
-           updateSpecialMoments(now);
+           updateSpecialDates(now);
        }
 
-       function updateMainTimer(now) {
-           const timeLeft = TARGET_AGE - now;
-           const units = calculateTimeUnits(timeLeft);
-           
-           Object.entries(units).forEach(([unit, value]) => {
-               const element = document.getElementById(unit);
-               if (element) {
-                   element.textContent = `${value} ${unit}`;
-               }
-           });
-       }
-
-       function calculateTimeUnits(ms) {
+       function formatTimeRemaining(ms) {
            const seconds = Math.floor(ms / 1000);
            const minutes = Math.floor(seconds / 60);
            const hours = Math.floor(minutes / 60);
            const days = Math.floor(hours / 24);
-           const weeks = Math.floor(days / 7);
            const months = Math.floor(days / 30.44);
            const years = Math.floor(days / 365.25);
 
            return {
                years: years,
                months: months % 12,
-               weeks: weeks % 4,
+               weeks: Math.floor((days % 30.44) / 7),
                days: days % 7,
                hours: hours % 24,
                minutes: minutes % 60,
                seconds: seconds % 60
            };
+       }
+
+       function updateMainTimer(now) {
+           const timeLeft = TARGET_AGE - now;
+           const units = formatTimeRemaining(timeLeft);
+           
+           let html = '';
+           Object.entries(units).forEach(([unit, value]) => {
+               html += `
+                   <div class="time-unit">
+                       <div class="value">${value}</div>
+                       <div class="label">${unit}</div>
+                   </div>
+               `;
+           });
+           document.getElementById('mainTimer').innerHTML = html;
        }
 
        function updateLifeProgress(now) {
@@ -233,72 +253,90 @@
            const beccaTotal = TARGET_AGE - BECCA_START;
            const beccaLived = now - BECCA_START;
            const beccaPercentage = (beccaLived / beccaTotal) * 100;
+           const beccaTimeLeft = formatTimeRemaining(TARGET_AGE - now);
            
            // Charlotte
            const charlotteEnd = new Date(CHARLOTTE_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000));
            const charlotteTotal = charlotteEnd - CHARLOTTE_BIRTH;
-           const charlottePassed = now - CHARLOTTE_BIRTH;
-           const charlottePercentage = (charlottePassed / charlotteTotal) * 100;
+           const charlotteLived = now - CHARLOTTE_BIRTH;
+           const charlottePercentage = (charlotteLived / charlotteTotal) * 100;
+           const charlotteTimeLeft = formatTimeRemaining(charlotteEnd - now);
            
            // Beau
            const beauEnd = new Date(BEAU_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000));
            const beauTotal = beauEnd - BEAU_BIRTH;
-           const beauPassed = now - BEAU_BIRTH;
-           const beauPercentage = (beauPassed / beauTotal) * 100;
+           const beauLived = now - BEAU_BIRTH;
+           const beauPercentage = (beauLived / beauTotal) * 100;
+           const beauTimeLeft = formatTimeRemaining(beauEnd - now);
            
            // Jack
-           const jackTotal = now - JACK_BIRTH;
-           const jackLife = JACK_PASSING - JACK_BIRTH;
-           const jackMemorial = now - JACK_PASSING;
-           const jackLifePercent = (jackLife / jackTotal) * 100;
-           const jackMemorialPercent = (jackMemorial / jackTotal) * 100;
+           const totalTime = now - JACK_BIRTH;
+           const lifeTime = JACK_PASSING - JACK_BIRTH;
+           const memorialTime = now - JACK_PASSING;
+           const lifePercentage = (lifeTime / totalTime) * 100;
+           const memorialPercentage = (memorialTime / totalTime) * 100;
 
            // Update displays
-           updateProgressBar('becca', beccaPercentage);
-           updateProgressBar('charlotte', charlottePercentage);
-           updateProgressBar('beau', beauPercentage);
-           
-           document.getElementById('jackTimeline').innerHTML = `
-               <div class="life-segment" style="width: ${jackLifePercent}%"></div>
-               <div class="memorial-segment" style="width: ${jackMemorialPercent}%"></div>
-           `;
-       }
+           document.getElementById('beccaProgress').style.width = `${beccaPercentage}%`;
+           document.getElementById('beccaStats').textContent = 
+               `${beccaPercentage.toFixed(1)}% | ${beccaTimeLeft.years}y ${beccaTimeLeft.months}m remaining`;
 
-       function updateProgressBar(id, percentage) {
-           document.getElementById(`${id}Progress`).style.width = `${percentage}%`;
+           document.getElementById('charlotteProgress').style.width = `${charlottePercentage}%`;
+           document.getElementById('charlotteStats').textContent = 
+               `${charlottePercentage.toFixed(1)}% | ${charlotteTimeLeft.years}y ${charlotteTimeLeft.months}m remaining`;
+
+           document.getElementById('beauProgress').style.width = `${beauPercentage}%`;
+           document.getElementById('beauStats').textContent = 
+               `${beauPercentage.toFixed(1)}% | ${beauTimeLeft.years}y ${beauTimeLeft.months}m remaining`;
+
+           document.getElementById('jackTimeline').innerHTML = `
+               <div class="life-segment" style="width: ${lifePercentage}%"></div>
+               <div class="memorial-segment" style="width: ${memorialPercentage}%"></div>
+           `;
+           document.getElementById('jackStats').textContent = 
+               `Together: ${Math.floor(lifeTime / (365.25 * 24 * 60 * 60 * 1000))}y | Since: ${Math.floor(memorialTime / (365.25 * 24 * 60 * 60 * 1000))}y`;
        }
 
        function updateHealth(now) {
            const impacts = {
-               light: 2,
-               moderate: 5,
-               heavy: 10
+               light: { years: 2, text: "Light (14-21 units/week)" },
+               moderate: { years: 5, text: "Moderate (21-35 units/week)" },
+               heavy: { years: 10, text: "Heavy (35+ units/week)" }
            };
 
-           Object.entries(impacts).forEach(([level, years]) => {
-               const adjustedTarget = new Date(TARGET_AGE.getTime() - (years * 365.25 * 24 * 60 * 60 * 1000));
+           Object.entries(impacts).forEach(([level, data]) => {
+               const adjustedTarget = new Date(TARGET_AGE.getTime() - (data.years * 365.25 * 24 * 60 * 60 * 1000));
                const total = adjustedTarget - BIRTH_DATE;
                const lived = now - BIRTH_DATE;
                const percentage = (lived / total) * 100;
+               const timeLeft = formatTimeRemaining(adjustedTarget - now);
                
-               document.getElementById(`${level}Drinking`).style.width = `${percentage}%`;
+               document.getElementById(`${level}Progress`).style.width = `${percentage}%`;
                document.getElementById(`${level}Stats`).textContent = 
-                   `${level}: -${years} years (${percentage.toFixed(2)}%)`;
+                   `${data.text}: -${data.years}y (${timeLeft.years}y ${timeLeft.months}m left)`;
            });
        }
 
-       function updateSpecialMoments(now) {
-           const charlotteYearsLeft = Math.floor((new Date(CHARLOTTE_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now) / (365.25 * 24 * 60 * 60 * 1000));
-           const beauYearsLeft = Math.floor((new Date(BEAU_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now) / (365.25 * 24 * 60 * 60 * 1000));
-           
-           const minYears = Math.min(charlotteYearsLeft, beauYearsLeft);
-           
-           document.getElementById('specialDates').innerHTML = `
-               Summers: ${minYears}<br>
-               Christmases: ${minYears}<br>
-               School Holidays: ${minYears * 3}<br>
-               Weekends: ${minYears * 52}
-           `;
+       function updateSpecialDates(now) {
+           // Next summer
+           const nextSummer = getNextDate(6, 21);
+           const summerTimeLeft = formatTimeRemaining(nextSummer - now);
+           const totalSummers = 12;
+           const summerPercentage = ((20 - totalSummers) / 20) * 100;
+
+           // Next Christmas
+           const nextChristmas = getNextDate(12, 25);
+           const christmasTimeLeft = formatTimeRemaining(nextChristmas - now);
+           const totalChristmases = 12;
+           const christmasPercentage = ((20 - totalChristmases) / 20) * 100;
+
+           document.getElementById('summerProgress').style.width = `${summerPercentage}%`;
+           document.getElementById('summerStats').textContent = 
+               `${totalSummers}/20 remaining | Next: ${summerTimeLeft.months}m ${summerTimeLeft.days}d`;
+
+           document.getElementById('christmasProgress').style.width = `${christmasPercentage}%`;
+           document.getElementById('christmasStats').textContent = 
+               `${totalChristmases}/20 remaining | Next: ${christmasTimeLeft.months}m ${christmasTimeLeft.days}d`;
        }
 
        // Initialize and start updates
