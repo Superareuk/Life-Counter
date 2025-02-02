@@ -97,6 +97,23 @@
        .special-date {
            margin: 15px 0;
        }
+
+       .dates {
+           grid-column: 1 / -1;
+           margin-top: 20px;
+       }
+
+       .timeline-card {
+           background: #444;
+           margin: 10px 0;
+           padding: 15px;
+           border-radius: 8px;
+       }
+
+       .timeline-card h3 {
+           margin: 0 0 10px 0;
+           color: #fff;
+       }
    </style>
 </head>
 <body>
@@ -174,6 +191,35 @@
                <div class="stats" id="christmasStats"></div>
            </div>
        </div>
+
+       <div class="section dates">
+           <h2>Significant Dates</h2>
+           
+           <div class="timeline-card">
+               <h3>Your Timeline</h3>
+               <div class="stats" id="yourTimeline"></div>
+           </div>
+
+           <div class="timeline-card">
+               <h3>Becca's Timeline</h3>
+               <div class="stats" id="beccaTimeline"></div>
+           </div>
+
+           <div class="timeline-card">
+               <h3>Charlotte's Timeline</h3>
+               <div class="stats" id="charlotteTimeline"></div>
+           </div>
+
+           <div class="timeline-card">
+               <h3>Beau's Timeline</h3>
+               <div class="stats" id="beauTimeline"></div>
+           </div>
+
+           <div class="timeline-card">
+               <h3>Jack's Timeline</h3>
+               <div class="stats" id="jackTimeline"></div>
+           </div>
+       </div>
    </div>
 
    <script>
@@ -201,6 +247,7 @@
            updateFamily(now);
            updateHealth(now);
            updateSpecialDates(now);
+           updateTimelines(now);
        }
 
        function formatTimeRemaining(ms) {
@@ -269,13 +316,6 @@
            const beauPercentage = (beauLived / beauTotal) * 100;
            const beauTimeLeft = formatTimeRemaining(beauEnd - now);
            
-           // Jack
-           const totalTime = now - JACK_BIRTH;
-           const lifeTime = JACK_PASSING - JACK_BIRTH;
-           const memorialTime = now - JACK_PASSING;
-           const lifePercentage = (lifeTime / totalTime) * 100;
-           const memorialPercentage = (memorialTime / totalTime) * 100;
-
            // Update displays
            document.getElementById('beccaProgress').style.width = `${beccaPercentage}%`;
            document.getElementById('beccaStats').textContent = 
@@ -288,6 +328,13 @@
            document.getElementById('beauProgress').style.width = `${beauPercentage}%`;
            document.getElementById('beauStats').textContent = 
                `${beauPercentage.toFixed(1)}% | ${beauTimeLeft.years}y ${beauTimeLeft.months}m remaining`;
+
+           // Jack's timeline
+           const totalTime = now - JACK_BIRTH;
+           const lifeTime = JACK_PASSING - JACK_BIRTH;
+           const memorialTime = now - JACK_PASSING;
+           const lifePercentage = (lifeTime / totalTime) * 100;
+           const memorialPercentage = (memorialTime / totalTime) * 100;
 
            document.getElementById('jackTimeline').innerHTML = `
                <div class="life-segment" style="width: ${lifePercentage}%"></div>
@@ -337,6 +384,59 @@
            document.getElementById('christmasProgress').style.width = `${christmasPercentage}%`;
            document.getElementById('christmasStats').textContent = 
                `${totalChristmases}/20 remaining | Next: ${christmasTimeLeft.months}m ${christmasTimeLeft.days}d`;
+       }
+
+       function updateTimelines(now) {
+           // Your timeline
+           document.getElementById('yourTimeline').innerHTML = `
+               Birth: March 30, 1990 (${calculateAge(BIRTH_DATE, now)} years old)<br>
+               Projected: March 30, 2060 (Age 70)<br>
+               Days lived: ${calculateDays(BIRTH_DATE, now)} | Days remaining: ${calculateDays(now, TARGET_AGE)}
+           `;
+
+           // Becca's timeline
+           const beccaBirth = new Date('1989-09-12');
+           const beccaDeath = new Date('2059-09-12');
+           document.getElementById('beccaTimeline').innerHTML = `
+               Birth: September 12, 1989 (${calculateAge(beccaBirth, now)} years old)<br>
+               Projected: September 12, 2059 (Age 70)<br>
+               Will be alive for ${calculateAge(beccaBirth, TARGET_AGE)} years of your life<br>
+               Days together: ${calculateDays(BECCA_START, now)} | Days remaining together: ${calculateDays(now, Math.min(TARGET_AGE, beccaDeath))}
+           `;
+
+           // Charlotte's timeline
+           const charlotteDeath = new Date('2087-02-15');
+           document.getElementById('charlotteTimeline').innerHTML = `
+               Birth: February 15, 2017 (${calculateAge(CHARLOTTE_BIRTH, now)} years old)<br>
+               Projected: February 15, 2087 (Age 70)<br>
+               Will be ${calculateAge(CHARLOTTE_BIRTH, TARGET_AGE)} when you reach 70<br>
+               Days together: ${calculateDays(CHARLOTTE_BIRTH, now)} | Days until 20: ${calculateDays(now, new Date('2037-02-15'))}
+           `;
+
+           // Beau's timeline
+           const beauDeath = new Date('2090-06-22');
+           document.getElementById('beauTimeline').innerHTML = `
+               Birth: June 22, 2020 (${calculateAge(BEAU_BIRTH, now)} years old)<br>
+               Projected: June 22, 2090 (Age 70)<br>
+               Will be ${calculateAge(BEAU_BIRTH, TARGET_AGE)} when you reach 70<br>
+               Days together: ${calculateDays(BEAU_BIRTH, now)} | Days until 20: ${calculateDays(now, new Date('2040-06-22'))}
+           `;
+
+           // Jack's timeline
+           document.getElementById('jackTimeline').innerHTML = `
+               Birth: August 11, 2015<br>
+               Passing: February 10, 2020 (Age ${calculateAge(JACK_BIRTH, JACK_PASSING)})<br>
+               Time together: ${calculateDays(JACK_BIRTH, JACK_PASSING)} days<br>
+               Time since: ${calculateDays(JACK_PASSING, now)} days
+           `;
+       }
+
+       function calculateAge(birthDate, currentDate) {
+           return Math.floor((currentDate - birthDate) / (365.25 * 24 * 60 * 60 * 1000));
+       }
+
+       function calculateDays(startDate, endDate) {
+           return Math.floor((endDate - startDate) / (24 * 60 * 60 * 1000));
        }
 
        // Initialize and start updates
