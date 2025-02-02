@@ -2,416 +2,364 @@
 <html>
 <head>
     <title>Life Dashboard</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <style>
-        :root {
-            --primary-color: #4CAF50;
-            --warning-color: #ff4444;
-            --memory-color: #4a90e2;
-            --highlight-color: #ffd700;
-            --background-color: #f5f5f5;
-        }
-
         body {
-            font-family: 'Arial', sans-serif;
-            background-color: var(--background-color);
             margin: 0;
-            padding: 20px;
-            color: #333;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
+            min-height: 100vh;
+            color: white;
         }
 
-        .dashboard {
-            max-width: 1200px;
+        .container {
+            max-width: 800px;
             margin: 0 auto;
+            padding: 20px;
         }
 
-        .card {
-            background: white;
-            border-radius: 15px;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        h1 {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .time-block {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
             padding: 20px;
             margin-bottom: 20px;
         }
 
-        .live-counter {
-            text-align: center;
-            font-size: 1.5em;
-            background: linear-gradient(135deg, #1a2a6c, #b21f1f, #fdbb2d);
-            color: white;
-            padding: 30px;
-        }
-
-        .countdown-display {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-            gap: 15px;
-            margin: 20px 0;
-        }
-
-        .countdown-unit {
-            background: rgba(255,255,255,0.1);
-            padding: 10px;
-            border-radius: 10px;
-        }
-
-        .progress-container {
-            margin: 20px 0;
-        }
-
         .progress-bar {
-            height: 30px;
-            background: #eee;
+            background: rgba(255, 255, 255, 0.2);
             border-radius: 15px;
+            height: 30px;
+            margin: 20px 0;
             overflow: hidden;
             position: relative;
         }
 
         .progress {
+            background: rgba(255, 255, 255, 0.8);
             height: 100%;
-            transition: width 0.5s ease;
+            transition: width 0.5s ease-in-out;
         }
 
-        .dual-progress-bar {
+        .dual-bar {
             display: flex;
-            height: 30px;
-            background: #eee;
-            border-radius: 15px;
-            overflow: hidden;
+            width: 100%;
         }
 
         .life-segment {
-            background: var(--primary-color);
+            background: #4CAF50;
+            height: 100%;
         }
 
         .memorial-segment {
-            background: var(--warning-color);
-        }
-
-        .milestone-marker {
-            position: absolute;
-            width: 2px;
+            background: #ff4444;
             height: 100%;
-            background: var(--highlight-color);
-            cursor: pointer;
         }
 
-        .tooltip {
-            position: absolute;
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            display: none;
-        }
-
-        .health-impact {
+        .countdown-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-            gap: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin-bottom: 30px;
+        }
+
+        .countdown-unit {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+        }
+
+        .value {
+            font-size: 2em;
+            font-weight: bold;
+        }
+
+        .label {
+            margin-top: 5px;
+            opacity: 0.8;
+        }
+
+        .health-impacts {
+            margin-top: 30px;
         }
 
         .impact-card {
-            border: 1px solid #ddd;
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
             border-radius: 10px;
+            margin-bottom: 15px;
         }
 
         .special-dates {
             display: grid;
             grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
             gap: 15px;
+            margin-top: 30px;
         }
 
         .date-card {
-            text-align: center;
+            background: rgba(255, 255, 255, 0.1);
             padding: 15px;
-            background: #f8f9fa;
             border-radius: 10px;
-        }
-
-        .enhancement-suggestions {
-            background: #e8f5e9;
-            padding: 20px;
-            border-radius: 10px;
-        }
-
-        [data-tooltip] {
-            position: relative;
-            cursor: help;
-        }
-
-        [data-tooltip]:hover::after {
-            content: attr(data-tooltip);
-            position: absolute;
-            bottom: 100%;
-            left: 50%;
-            transform: translateX(-50%);
-            background: rgba(0,0,0,0.8);
-            color: white;
-            padding: 5px 10px;
-            border-radius: 5px;
-            font-size: 0.8em;
-            white-space: nowrap;
+            text-align: center;
         }
     </style>
 </head>
 <body>
-    <div class="dashboard">
-        <div class="card live-counter">
-            <h1>Life Dashboard</h1>
-            <div class="countdown-display">
-                <div class="countdown-unit" id="years">
-                    <div class="value">0</div>
-                    <div class="label">Years</div>
-                </div>
-                <!-- Add this right after the first card div ends -->
+    <div class="container">
+        <h1>Life Dashboard</h1>
 
-<!-- Family Section -->
-<div class="card">
-    <h2>Family Time</h2>
-    
-    <div class="progress-container">
-        <h3>Time with Becca (Since April 2006)</h3>
-        <div class="progress-bar">
-            <div class="progress" id="beccaProgress"></div>
+        <div class="countdown-grid">
+            <div class="countdown-unit" id="years">
+                <div class="value">0</div>
+                <div class="label">Years</div>
+            </div>
+            <div class="countdown-unit" id="months">
+                <div class="value">0</div>
+                <div class="label">Months</div>
+            </div>
+            <div class="countdown-unit" id="weeks">
+                <div class="value">0</div>
+                <div class="label">Weeks</div>
+            </div>
+            <div class="countdown-unit" id="days">
+                <div class="value">0</div>
+                <div class="label">Days</div>
+            </div>
         </div>
-    </div>
 
-    <div class="progress-container">
-        <h3>Time with Charlotte</h3>
-        <div id="charlotteRemaining"></div>
-        <div class="progress-bar">
-            <div class="progress" id="charlotteProgress"></div>
-        </div>
-    </div>
-
-    <div class="progress-container">
-        <h3>Time with Beau</h3>
-        <div id="beauRemaining"></div>
-        <div class="progress-bar">
-            <div class="progress" id="beauProgress"></div>
-        </div>
-    </div>
-
-    <div class="progress-container">
-        <h3>Time with Jack</h3>
-        <div class="dual-progress-bar jack-timeline"></div>
-        <div id="jackTime"></div>
-    </div>
-</div>
-
-<!-- Special Moments Section -->
-<div class="card">
-    <h2>Special Moments Remaining</h2>
-    <div class="special-dates">
-        <div class="date-card" id="summers"></div>
-        <div class="date-card" id="christmases"></div>
-        <div class="date-card" id="schoolHolidays"></div>
-        <div class="date-card" id="weekends"></div>
-    </div>
-</div>
-
-<!-- Health Impact Section -->
-<div class="card">
-    <h2>Health Impact</h2>
-    <div class="health-impact">
-        <div class="impact-card">
-            <h3>Light Drinking (14-21 units/week)</h3>
+        <div class="time-block">
+            <h2>Life Progress (to age 70)</h2>
             <div class="progress-bar">
-                <div class="progress" id="lightDrinkingProgress"></div>
+                <div class="progress" id="mainProgress"></div>
             </div>
-            <div id="lightDrinkingImpact"></div>
+            <div id="percentageDisplay" style="text-align: center;"></div>
         </div>
-        <div class="impact-card">
-            <h3>Moderate Drinking (21-35 units/week)</h3>
-            <div class="progress-bar">
-                <div class="progress" id="moderateDrinkingProgress"></div>
-            </div>
-            <div id="moderateDrinkingImpact"></div>
-        </div>
-        <div class="impact-card">
-            <h3>Heavy Drinking (35+ units/week)</h3>
-            <div class="progress-bar">
-                <div class="progress" id="heavyDrinkingProgress"></div>
-            </div>
-            <div id="heavyDrinkingImpact"></div>
-        </div>
-    </div>
-</div>
 
-<!-- Time Units Display -->
-<div class="countdown-unit" id="months">
-    <div class="value">0</div>
-    <div class="label">Months</div>
-</div>
-<div class="countdown-unit" id="weeks">
-    <div class="value">0</div>
-    <div class="label">Weeks</div>
-</div>
-<div class="countdown-unit" id="days">
-    <div class="value">0</div>
-    <div class="label">Days</div>
-</div>
-<div class="countdown-unit" id="hours">
-    <div class="value">0</div>
-    <div class="label">Hours</div>
-</div>
-<div class="countdown-unit" id="minutes">
-    <div class="value">0</div>
-    <div class="label">Minutes</div>
-</div>
-                <!-- Similar divs for months, weeks, days, hours, minutes -->
+        <div class="time-block">
+            <h2>Family</h2>
+            <div class="progress-bar">
+                <h3>Time with Becca (Since April 2006)</h3>
+                <div class="progress" id="beccaProgress"></div>
             </div>
-            <div class="progress-container">
+
+            <h3>Time with Charlotte (Until age 20)</h3>
+            <div class="progress-bar">
+                <div class="progress" id="charlotteProgress"></div>
+            </div>
+            <div id="charlotteRemaining"></div>
+
+            <h3>Time with Beau (Until age 20)</h3>
+            <div class="progress-bar">
+                <div class="progress" id="beauProgress"></div>
+            </div>
+            <div id="beauRemaining"></div>
+
+            <h3>Time with Jack</h3>
+            <div class="progress-bar">
+                <div class="dual-bar jack-timeline"></div>
+            </div>
+            <div id="jackTime"></div>
+        </div>
+
+        <div class="time-block">
+            <h2>Health Impact Scenarios</h2>
+            <div class="impact-card">
+                <h3>Light Drinking (14-21 units/week)</h3>
                 <div class="progress-bar">
-                    <div class="progress" id="mainProgress"></div>
+                    <div class="progress" id="lightDrinkingProgress"></div>
                 </div>
-                <div id="percentageDisplay"></div>
+                <div id="lightDrinkingImpact"></div>
+            </div>
+
+            <div class="impact-card">
+                <h3>Moderate Drinking (21-35 units/week)</h3>
+                <div class="progress-bar">
+                    <div class="progress" id="moderateDrinkingProgress"></div>
+                </div>
+                <div id="moderateDrinkingImpact"></div>
+            </div>
+
+            <div class="impact-card">
+                <h3>Heavy Drinking (35+ units/week)</h3>
+                <div class="progress-bar">
+                    <div class="progress" id="heavyDrinkingProgress"></div>
+                </div>
+                <div id="heavyDrinkingImpact"></div>
             </div>
         </div>
 
-        <!-- Family Timeline Section -->
-        <!-- Health Impact Section -->
-        <!-- Special Moments Section -->
-        <!-- Life Enhancement Section -->
+        <div class="time-block">
+            <h2>Special Moments Remaining</h2>
+            <div class="special-dates">
+                <div class="date-card" id="summers"></div>
+                <div class="date-card" id="christmases"></div>
+                <div class="date-card" id="schoolHolidays"></div>
+                <div class="date-card" id="weekends"></div>
+            </div>
+        </div>
     </div>
+
     <script>
-    // Constants for important dates
-    const BIRTH_DATE = new Date('1990-03-30');
-    const TARGET_AGE = new Date('2060-03-30'); // 70 years
-    const BECCA_START = new Date('2006-04-01');
-    const CHARLOTTE_BIRTH = new Date('2017-02-15');
-    const BEAU_BIRTH = new Date('2020-06-22');
-    const JACK_BIRTH = new Date('2015-08-11');
-    const JACK_PASSING = new Date('2020-02-10');
+        // Constants
+        const BIRTH_DATE = new Date('1990-03-30');
+        const TARGET_AGE = new Date('2060-03-30');
+        const BECCA_START = new Date('2006-04-01');
+        const CHARLOTTE_BIRTH = new Date('2017-02-15');
+        const BEAU_BIRTH = new Date('2020-06-22');
+        const JACK_BIRTH = new Date('2015-08-11');
+        const JACK_PASSING = new Date('2020-02-10');
 
-    // Health impact calculations
-    const DRINKING_IMPACTS = {
-        light: { unitsPerWeek: '14-21', yearsReduced: 2 },
-        moderate: { unitsPerWeek: '21-35', yearsReduced: 5 },
-        heavy: { unitsPerWeek: '35+', yearsReduced: 10 }
-    };
-
-    function updateDashboard() {
-        const now = new Date();
-        
-        // Main countdown calculations
-        const timeToTarget = TARGET_AGE - now;
-        const totalLifespan = TARGET_AGE - BIRTH_DATE;
-        const livedSoFar = now - BIRTH_DATE;
-        const percentageLived = (livedSoFar / totalLifespan) * 100;
-
-        // Update main progress bar
-        document.getElementById('mainProgress').style.width = `${percentageLived}%`;
-        document.getElementById('percentageDisplay').textContent = 
-            `${percentageLived.toFixed(2)}% of life lived`;
-
-        // Update time units
-        updateTimeUnits(timeToTarget);
-        updateFamilyTimelines(now);
-        updateHealthImpacts(now);
-        updateSpecialDates(now);
-    }
-
-    function updateTimeUnits(timeRemaining) {
-        const units = {
-            years: Math.floor(timeRemaining / (365.25 * 24 * 60 * 60 * 1000)),
-            months: Math.floor((timeRemaining % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000)),
-            weeks: Math.floor((timeRemaining % (30.44 * 24 * 60 * 60 * 1000)) / (7 * 24 * 60 * 60 * 1000)),
-            days: Math.floor((timeRemaining % (7 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000)),
-            hours: Math.floor((timeRemaining % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000)),
-            minutes: Math.floor((timeRemaining % (60 * 60 * 1000)) / (60 * 1000))
+        const DRINKING_IMPACTS = {
+            light: { unitsPerWeek: '14-21', yearsReduced: 2 },
+            moderate: { unitsPerWeek: '21-35', yearsReduced: 5 },
+            heavy: { unitsPerWeek: '35+', yearsReduced: 10 }
         };
 
-        Object.entries(units).forEach(([unit, value]) => {
-            if (document.getElementById(unit)) {
-                document.getElementById(unit).querySelector('.value').textContent = value;
-            }
-        });
-    }
-
-    function updateJackTimeline(now) {
-        const totalTimespan = now - JACK_BIRTH;
-        const timeWithJack = JACK_PASSING - JACK_BIRTH;
-        const timeSince = now - JACK_PASSING;
-        
-        const lifePercentage = (timeWithJack / totalTimespan) * 100;
-        const memorialPercentage = (timeSince / totalTimespan) * 100;
-
-        const lifeSegment = document.createElement('div');
-        lifeSegment.className = 'life-segment';
-        lifeSegment.style.width = `${lifePercentage}%`;
-
-        const memorialSegment = document.createElement('div');
-        memorialSegment.className = 'memorial-segment';
-        memorialSegment.style.width = `${memorialPercentage}%`;
-
-        // Update Jack's timeline display
-        const container = document.querySelector('.jack-timeline');
-        container.innerHTML = '';
-        container.appendChild(lifeSegment);
-        container.appendChild(memorialSegment);
-    }
-
-    function updateFamilyTimelines(now) {
-        // Charlotte timeline
-        const charlotteTimeRemaining = new Date(CHARLOTTE_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now;
-        const charlotteYearsRemaining = Math.floor(charlotteTimeRemaining / (365.25 * 24 * 60 * 60 * 1000));
-        
-        // Beau timeline
-        const beauTimeRemaining = new Date(BEAU_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now;
-        const beauYearsRemaining = Math.floor(beauTimeRemaining / (365.25 * 24 * 60 * 60 * 1000));
-
-        // Becca timeline
-        const beccaTimeTotal = TARGET_AGE - BECCA_START;
-        const beccaTimeLived = now - BECCA_START;
-        const beccaPercentage = (beccaTimeLived / beccaTimeTotal) * 100;
-
-        updateJackTimeline(now);
-
-        // Update displays
-        document.getElementById('charlotteRemaining').textContent = 
-            `${charlotteYearsRemaining} years remaining until Charlotte is 20`;
-        document.getElementById('beauRemaining').textContent = 
-            `${beauYearsRemaining} years remaining until Beau is 20`;
-        document.getElementById('beccaProgress').style.width = `${beccaPercentage}%`;
-    }
-
-    function calculateSpecialDates(now) {
-        const summerHolidays = Math.min(
-            Math.floor((new Date(CHARLOTTE_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now) / (365.25 * 24 * 60 * 60 * 1000)),
-            Math.floor((new Date(BEAU_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now) / (365.25 * 24 * 60 * 60 * 1000))
-        );
-
-        return {
-            summers: summerHolidays,
-            christmases: summerHolidays,
-            schoolHolidays: summerHolidays * 3,
-            weekends: summerHolidays * 52
-        };
-    }
-
-    // Start the dashboard updates
-    updateDashboard();
-    setInterval(updateDashboard, 1000);
-
-    // Event listeners for interactive elements
-    document.querySelectorAll('[data-tooltip]').forEach(element => {
-        element.addEventListener('mouseover', e => {
-            const tooltip = document.createElement('div');
-            tooltip.className = 'tooltip';
-            tooltip.textContent = e.target.dataset.tooltip;
-            document.body.appendChild(tooltip);
+        function updateDashboard() {
+            const now = new Date();
             
-            const rect = e.target.getBoundingClientRect();
-            tooltip.style.left = `${rect.left + (rect.width/2) - (tooltip.offsetWidth/2)}px`;
-            tooltip.style.top = `${rect.top - tooltip.offsetHeight - 5}px`;
-        });
+            // Main countdown calculations
+            const timeToTarget = TARGET_AGE - now;
+            const totalLifespan = TARGET_AGE - BIRTH_DATE;
+            const livedSoFar = now - BIRTH_DATE;
+            const percentageLived = (livedSoFar / totalLifespan) * 100;
 
-        element.addEventListener('mouseout', () => {
-            document.querySelector('.tooltip').remove();
-        });
-    });
-</script>
+            // Update main progress bar
+            document.getElementById('mainProgress').style.width = `${percentageLived}%`;
+            document.getElementById('percentageDisplay').textContent = 
+                `${percentageLived.toFixed(2)}% of life lived`;
+
+            // Update all sections
+            updateTimeUnits(timeToTarget);
+            updateFamilyTimelines(now);
+            updateHealthImpacts(now);
+            updateSpecialDates(now);
+        }
+
+        function updateTimeUnits(timeRemaining) {
+            const units = {
+                years: Math.floor(timeRemaining / (365.25 * 24 * 60 * 60 * 1000)),
+                months: Math.floor((timeRemaining % (365.25 * 24 * 60 * 60 * 1000)) / (30.44 * 24 * 60 * 60 * 1000)),
+                weeks: Math.floor((timeRemaining % (30.44 * 24 * 60 * 60 * 1000)) / (7 * 24 * 60 * 60 * 1000)),
+                days: Math.floor((timeRemaining % (7 * 24 * 60 * 60 * 1000)) / (24 * 60 * 60 * 1000))
+            };
+
+            Object.entries(units).forEach(([unit, value]) => {
+                if (document.getElementById(unit)) {
+                    document.getElementById(unit).querySelector('.value').textContent = value;
+                }
+            });
+        }
+
+        function updateFamilyTimelines(now) {
+            // Update Becca timeline
+            const beccaTimeTotal = TARGET_AGE - BECCA_START;
+            const beccaTimeLived = now - BECCA_START;
+            const beccaPercentage = (beccaTimeLived / beccaTimeTotal) * 100;
+            document.getElementById('beccaProgress').style.width = `${beccaPercentage}%`;
+
+            // Update children timelines
+            const charlotteEndDate = new Date(CHARLOTTE_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000));
+            const beauEndDate = new Date(BEAU_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000));
+
+            const charlottePercentage = ((now - CHARLOTTE_BIRTH) / (charlotteEndDate - CHARLOTTE_BIRTH)) * 100;
+            const beauPercentage = ((now - BEAU_BIRTH) / (beauEndDate - BEAU_BIRTH)) * 100;
+
+            document.getElementById('charlotteProgress').style.width = `${charlottePercentage}%`;
+            document.getElementById('beauProgress').style.width = `${beauPercentage}%`;
+
+            // Update Jack's timeline
+            const totalJackTime = now - JACK_BIRTH;
+            const timeWithJack = JACK_PASSING - JACK_BIRTH;
+            const timeSince = now - JACK_PASSING;
+            
+            const lifePercentage = (timeWithJack / totalJackTime) * 100;
+            const memorialPercentage = (timeSince / totalJackTime) * 100;
+
+            document.querySelector('.jack-timeline').innerHTML = `
+                <div class="life-segment" style="width: ${lifePercentage}%"></div>
+                <div class="memorial-segment" style="width: ${memorialPercentage}%"></div>
+            `;
+
+            // Update remaining time displays
+            const charlotteYearsLeft = Math.floor((charlotteEndDate - now) / (365.25 * 24 * 60 * 60 * 1000));
+            const beauYearsLeft = Math.floor((beauEndDate - now) / (365.25 * 24 * 60 * 60 * 1000));
+
+            document.getElementById('charlotteRemaining').textContent = `${charlotteYearsLeft} years remaining`;
+            document.getElementById('beauRemaining').textContent = `${beauYearsLeft} years remaining`;
+        }
+
+        function updateHealthImpacts(now) {
+            const scenarios = {
+                light: 2,
+                moderate: 5,
+                heavy: 10
+            };
+
+            Object.entries(scenarios).forEach(([level, reduction]) => {
+                const adjustedTarget = new Date(TARGET_AGE.getTime() - (reduction * 365.25 * 24 * 60 * 60 * 1000));
+                const totalSpan = adjustedTarget - BIRTH_DATE;
+                const lived = now - BIRTH_DATE;
+                const percentage = (lived / totalSpan) * 100;
+                
+                document.getElementById(`${level}DrinkingProgress`).style.width = `${percentage}%`;
+                document.getElementById(`${level}DrinkingImpact`).textContent = 
+                    `Life expectancy reduced to ${Math.floor((adjustedTarget - BIRTH_DATE) / (365.25 * 24 * 60 * 60 * 1000))} years`;
+            });
+        }
+
+        function updateSpecialDates(now) {
+            const dates = calculateSpecialDates(now);
+            
+            document.getElementById('summers').innerHTML = `
+                <h3>Summers</h3>
+                <div class="value">${dates.summers}</div>
+                <div class="label">remaining</div>
+            `;
+            
+            document.getElementById('christmases').innerHTML = `
+                <h3>Christmases</h3>
+                <div class="value">${dates.christmases}</div>
+                <div class="label">remaining</div>
+            `;
+            
+            document.getElementById('schoolHolidays').innerHTML = `
+                <h3>School Holidays</h3>
+                <div class="value">${dates.schoolHolidays}</div>
+                <div class="label">remaining</div>
+            `;
+            
+            document.getElementById('weekends').innerHTML = `
+                <h3>Weekends</h3>
+                <div class="value">${dates.weekends}</div>
+                <div class="label">remaining</div>
+            `;
+        }
+
+        function calculateSpecialDates(now) {
+            const charlotteTimeLeft = Math.floor((new Date(CHARLOTTE_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now) / (365.25 * 24 * 60 * 60 * 1000));
+            const beauTimeLeft = Math.floor((new Date(BEAU_BIRTH.getTime() + (20 * 365.25 * 24 * 60 * 60 * 1000)) - now) / (365.25 * 24 * 60 * 60 * 1000));
+            
+            const minYearsLeft = Math.min(charlotteTimeLeft, beauTimeLeft);
+            
+            return {
+                summers: minYearsLeft,
+                christmases: minYearsLeft,
+                schoolHolidays: minYearsLeft * 3,
+                weekends: minYearsLeft * 52
+            };
+        }
+
+        // Initialize and start updates
+        updateDashboard();
+        setInterval(updateDashboard, 1000);
+    </script>
 </body>
 </html>
